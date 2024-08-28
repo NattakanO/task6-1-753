@@ -1,126 +1,90 @@
 pipeline {
-    agent any
-    environment {
-        DIRECTORY_PATH = "/Users/mook/S777/T2/SIT753/jenkins/JenkinsFile"
-        TESTING_ENVIRONMENT = "QA"
-        PRODUCTION_ENVIRONMENT = "NATTAKAN"
-        EMAIL_RECIPIENT = "nattakan.o1998@gmail.com"
+  agent any
+  environment {
+    DIRECTORY_PATH = "/Users/mook/S777/T2/SIT753/jenkins/JenkinsFile"
+    TESTING_ENVIRONMENT = "QA"
+    PRODUCTION_ENVIRONMENT = "NATTAKAN"
+    EMAIL_RECIPIENT = "nattakan.o1998@gmail.com"
+  }
+  stages {
+    stage('Build') {
+      steps {
+        echo "Stage 1: Building the code using Maven and GitLab CI/CD"
+      }
     }
-    stages {
-        stage('Build') {
-            steps {
-                echo "Stage 1: Building the code using Maven"
-            }
-        }
-        stage('Unit and Integration Tests') {
-            steps {
-                echo "Stage 2: Running Unit Tests and Integration Tests"
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
-                    script {
-                        def logs = findFiles(glob: 'test-*.log')
-                        if (logs.length > 0) {
-                            def attachments = logs.collect { it.path }.join(',')
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Unit and Integration Tests Passed",
-                                     body: "The Unit and Integration Tests stage was successful.",
-                                     attachments: attachments
-                        } else {
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Unit and Integration Tests Passed",
-                                     body: "The Unit and Integration Tests stage was successful, but no logs were found."
-                        }
-                    }
-                }
-                failure {
-                    archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
-                    script {
-                        def logs = findFiles(glob: 'test-*.log')
-                        if (logs.length > 0) {
-                            def attachments = logs.collect { it.path }.join(',')
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Unit and Integration Tests Failed",
-                                     body: "The Unit and Integration Tests stage failed. Please check the attached logs for details.",
-                                     attachments: attachments
-                        } else {
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Unit and Integration Tests Failed",
-                                     body: "The Unit and Integration Tests stage failed, but no logs were found."
-                        }
-                    }
-                }
-            }
-        }
-        stage('Code Analysis') {
-            steps {
-                echo "Stage 3: Analyzing the code using SonarQube"
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                echo "Stage 4: Performing a Security Scan using OWASP Dependency-Check"
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
-                    script {
-                        def logs = findFiles(glob: 'security-*.log')
-                        if (logs.length > 0) {
-                            def attachments = logs.collect { it.path }.join(',')
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Security Scan Passed",
-                                     body: "The Security Scan stage was successful.",
-                                     attachments: attachments
-                        } else {
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Security Scan Passed",
-                                     body: "The Security Scan stage was successful, but no logs were found."
-                        }
-                    }
-                }
-                failure {
-                    archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
-                    script {
-                        def logs = findFiles(glob: 'security-*.log')
-                        if (logs.length > 0) {
-                            def attachments = logs.collect { it.path }.join(',')
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Security Scan Failed",
-                                     body: "The Security Scan stage failed. Please check the attached logs for details.",
-                                     attachments: attachments
-                        } else {
-                            emailext to: "${EMAIL_RECIPIENT}",
-                                     subject: "Security Scan Failed",
-                                     body: "The Security Scan stage failed, but no logs were found."
-                        }
-                    }
-                }
-            }
-        }
-        stage('Deploy to Staging') {
-            steps {
-                echo "Stage 5: Deploying the application to the staging server"
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo "Stage 6: Running Integration Tests on the Staging Environment"
-            }
-        }
-        stage('Deploy to Production') {
-            steps {
-                echo "Stage 7: Deploying the application to the production server"
-            }
-        }
-    }
-    post {
+    stage('Unit and Integration Tests') {
+      steps {
+        echo "Stage 2: Running unit tests and integration tests using Jest"
+      }
+      post {
         success {
-            echo "Pipeline completed successfully!"
+          archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
+          emailext attachLog: true,
+          mail to: "${EMAIL_RECIPIENT}",
+          subject: "Unit and Integration Tests Passed",
+          body: "The Unit and Integration Tests stage was successful.",
+          // attachmentsPattern: 'test-*.log'
         }
         failure {
-            echo "Pipeline failed."
+          archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
+          emailext attachLog: true,
+          mail to: "${EMAIL_RECIPIENT}",
+          subject: "Unit and Integration Tests Failed",
+          body: "The Unit and Integration Tests stage failed. Please check the attached logs for details.",
+          // attachmentsPattern: 'test-*.log'
         }
+      }
     }
+    stage('Code Analysis') {
+      steps {
+        echo "Stage 3: Integrate a code analysis tool to analyze the code using Jenkins"
+      }
+    }
+      stage('Security Scan') {
+          steps {
+              echo "Stage 4: Performing a security scan using Burp Suite"
+          }
+      post {
+        success {
+          archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
+          emailext attachLog: true,
+          mail to: "${EMAIL_RECIPIENT}",
+          subject: "Security Scan Passed",
+          body: "The Security Scan stage was successful.",
+          // attachmentsPattern: 'security-*.log'
+        }
+        failure {
+          archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
+          emailext attachLog: true,
+          mail to: "${EMAIL_RECIPIENT}",
+          subject: "Security Scan Failed",
+          body: "The Security Scan stage failed. Please check the attached logs for details.",
+          // attachmentsPattern: '**/security-*.log'
+        }
+      }
+    }
+    stage('Deploy to Staging') {
+      steps {
+        echo "Stage 5: Deploying the application to the staging server using AWS"
+      }
+    }
+    stage('Integration Tests on Staging') {
+      steps {
+        echo "Stage 6: Running integration tests on the staging environment"
+      }
+    }
+    stage('Deploy to Production') {
+      steps {
+        echo "Stage 7: Deploying the application to the production server using AWS"
+      }
+    }
+  }
+  post {
+    success {
+      echo "Pipeline completed successfully!"
+    }
+    failure {
+      echo "Pipeline failed."
+    }
+  }
 }
