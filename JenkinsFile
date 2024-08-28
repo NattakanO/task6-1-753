@@ -19,18 +19,18 @@ pipeline {
       post {
         success {
           archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
-          emailext attachLog: true,
           mail to: "${EMAIL_RECIPIENT}",
           subject: "Unit and Integration Tests Passed",
           body: "The Unit and Integration Tests stage was successful.",
+          emailext attachLog: true,
           // attachmentsPattern: 'test-*.log'
         }
         failure {
           archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
-          emailext attachLog: true,
           mail to: "${EMAIL_RECIPIENT}",
           subject: "Unit and Integration Tests Failed",
           body: "The Unit and Integration Tests stage failed. Please check the attached logs for details.",
+          emailext attachLog: true,
           // attachmentsPattern: 'test-*.log'
         }
       }
@@ -47,18 +47,18 @@ pipeline {
       post {
         success {
           archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
-          emailext attachLog: true,
           mail to: "${EMAIL_RECIPIENT}",
           subject: "Security Scan Passed",
           body: "The Security Scan stage was successful.",
+          emailext attachLog: true,
           // attachmentsPattern: 'security-*.log'
         }
         failure {
           archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
-          emailext attachLog: true,
           mail to: "${EMAIL_RECIPIENT}",
           subject: "Security Scan Failed",
           body: "The Security Scan stage failed. Please check the attached logs for details.",
+          emailext attachLog: true,
           // attachmentsPattern: '**/security-*.log'
         }
       }
