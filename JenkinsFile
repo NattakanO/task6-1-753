@@ -1,62 +1,86 @@
 pipeline {
-    agent any
-    environment {
-      DIRECTORY_PATH = "/Users/mook/S777/T2/SIT753/jenkins/JenkinsFile"
-      TESTING_ENVIRONMENT = "QA"
-      PRODUCTION_ENVIRONMENT = "NATTAKAN"
+  agent any
+  environment {
+    DIRECTORY_PATH = "/Users/mook/S777/T2/SIT753/jenkins/JenkinsFile"
+    TESTING_ENVIRONMENT = "QA"
+    PRODUCTION_ENVIRONMENT = "NATTAKAN"
+    EMAIL_RECIPIENT = "nattakan.o1998@gmail.com"
+  }
+  stages {
+    stage('Build') {
+      steps {
+        echo "Stage 1: Building the code using Maven and GitLab CI/CD"
+      }
     }
-    stages {
-        stage('Build') {
-          steps {
-            echo "fetching the source code from ${DIRECTORY_PATH}"
-            echo "compile the code and generate any necessary artifacts"
-          }
-          post{
-            success{
-              mail to: "nattakan.o1998@gmail.com",
-              subject: "Build Status Email",
-              body: "Build was successful!"
-            }
-          }
+    stage('Unit and Integration Tests') {
+      steps {
+        echo "Stage 2: Running unit tests and integration tests using Jest"
+      }
+      post {
+        success {
+          archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
+          mail to: "${EMAIL_RECIPIENT}",
+            subject: "Unit and Integration Tests Passed",
+            body: "The Unit and Integration Tests stage was successful.",
+            attachmentsPattern: 'test-*.log'
         }
-        stage('Unit and Integration Tests') {
-          steps {
-            echo "unit tests"
-            echo "integration tests"
-          }
+        failure {
+          archiveArtifacts artifacts: 'test-*.log', allowEmptyArchive: true
+          mail to: "${EMAIL_RECIPIENT}",
+            subject: "Unit and Integration Tests Failed",
+            body: "The Unit and Integration Tests stage failed. Please check the attached logs for details.",
+            attachmentsPattern: 'test-*.log'
         }
-        stage('Code Analysis') {
-          steps {
-            echo "unit tests"
-            echo "integration tests"
-          }
-        }
-        stage('Security Scan') {
-          steps {
-            echo "unit tests"
-            echo "integration tests"
-          }
-        }
-        stage('Integration Tests on Staging') {
-          steps {
-            echo "checking the quality of the code"
-          }
-        }
-        stage('Deploy') {
-          steps {
-            echo "deploy the application to ${TESTING_ENVIRONMENT}"
-          }
-        }
-        stage('Approval') {
-          steps {
-            echo "approvaling"
-            sleep 10
-          }
-        }
-        stage('Deploy to Production') {
-          steps {
-            echo "deploying the code to ${PRODUCTION_ENVIRONMENT}"
-          }
-        }
+      }
     }
+    stage('Code Analysis') {
+      steps {
+        echo "Stage 3: Integrate a code analysis tool to analyze the code using Jenkins"
+      }
+    }
+      stage('Security Scan') {
+          steps {
+              echo "Stage 4: Performing a security scan using Burp Suite"
+          }
+      post {
+        success {
+          archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
+          mail to: "${EMAIL_RECIPIENT}",
+            subject: "Security Scan Passed",
+            body: "The Security Scan stage was successful.",
+            attachmentsPattern: 'security-*.log'
+        }
+        failure {
+          archiveArtifacts artifacts: 'security-*.log', allowEmptyArchive: true
+          mail to: "${EMAIL_RECIPIENT}",
+            subject: "Security Scan Failed",
+            body: "The Security Scan stage failed. Please check the attached logs for details.",
+            attachmentsPattern: '**/security-*.log'
+        }
+      }
+    }
+    stage('Deploy to Staging') {
+      steps {
+        echo "Stage 5: Deploying the application to the staging server using AWS"
+      }
+    }
+    stage('Integration Tests on Staging') {
+      steps {
+        echo "Stage 6: Running integration tests on the staging environment"
+      }
+    }
+    stage('Deploy to Production') {
+      steps {
+        echo "Stage 7: Deploying the application to the production server using AWS"
+      }
+    }
+  }
+  post {
+    success {
+      echo "Pipeline completed successfully!"
+    }
+    failure {
+      echo "Pipeline failed."
+    }
+  }
 }
